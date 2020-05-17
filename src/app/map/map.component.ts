@@ -1,15 +1,9 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { map, switchMap, filter } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { combineLatest } from 'rxjs';
-
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 
-import * as turf from '@turf/turf';
-import * as bbox from '@turf/bbox';
-import * as bboxPolygon from '@turf/bbox-polygon';
-import * as intersect from '@turf/intersect';
 import { StoreService } from '../services/store.service';
 @Component({
   selector: 'app-map',
@@ -22,6 +16,7 @@ export class MapComponent implements OnInit {
   group: L.MarkerClusterGroup;
   icons: any;
   prevPoint: any;
+  center = [25.0677505, 121.5470599];
   constructor(
     public storeService: StoreService,
   ) {
@@ -37,13 +32,23 @@ export class MapComponent implements OnInit {
     };
   }
   ngOnInit() {
+    this.getLocation(this.successLocation, this.failureLocation);
+  }
+  getLocation(successCallback, failureCallback) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(successCallback, failureCallback);
+    }
+  }
+  successLocation = (position) => {
+    this.center = [position.coords.latitude, position.coords.longitude];
+    this.getStoreData();
+  }
+  failureLocation = () => {
     this.getStoreData();
   }
   getStoreData(): void {
-
     this.storeService.getPharmacy().pipe(
       map(data => {
-
         const info = data.reduce((total, el) => {
           total.push({ ...el.properties, coordinates: el.geometry.coordinates });
           return total;
@@ -53,14 +58,14 @@ export class MapComponent implements OnInit {
         };
       })
     ).subscribe(res => {
-      if (!this.map) { this.initMap([25.0677505, 121.5470599]); }
+      if (!this.map) { this.initMap(this.center); }
       this.renderMap(res);
     });
   }
   initMap(location: any): void {
     this.map = L.map('map', {
       center: location,
-      zoom: 10,
+      zoom: 14,
       zoomControl: false,
       layers: [L.tileLayer(
         'https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}',
@@ -71,21 +76,18 @@ export class MapComponent implements OnInit {
         }
       )]
     });
-    this.map.setView(location, 10);
+    this.map.setView(location, 14);
   }
 
   renderMap(data: any) {
     if (this.group) {
       this.map.removeLayer(this.group);
     }
-
     this.group = new L.MarkerClusterGroup().addTo(this.map);
-
     data.pharmacyPoint.map((e, i) => {
       this.addMarker(e);
     });
     this.map.addLayer(this.group);
-
 
     if (this.prevPoint) {
       this.map.removeLayer(this.prevPoint);
@@ -120,26 +122,31 @@ export class MapComponent implements OnInit {
   }
   customPopup(info) {
     return `
-      <div class="customPopup">
-        <div class="customPopup__title">${ info.name}</div>
-        <div class="customPopup__block-left">
-          <div class="customPopup__addr">${ info.address}</div>
-          <div class="customPopup__note">${ info.note}</div>
-          <div class="customPopup__phone">${ info.phone}</div>
-        </div>
-        <div class="customPopup__block-right">
-          <div class="customPopup__block-flex">
-            <div class="customPopup__child">
-              <p>小孩</p>
-              <p>${ info.mask_child}</p>
-            </div>
-            <div class="customPopup__adult">
-              <p>大人</p>
-              <p>${ info.mask_adult}</p>
-            </div>
+      <div class="popup">
+        <h3 class="popup_title">${ info.name}</h3>
+        <div class="media mt-3">
+          <div class="mr-2"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="media-body">
+            ${ info.address}
           </div>
         </div>
-        <div class="customPopup__updated">更新時間：${ info.updated}</div>
+        <div class="media mt-2">
+          <div class="mr-2"><i class="fas fa-phone"></i></div>
+          <div class="media-body">
+            ${ info.phone}
+          </div>
+        </div>
+        <div class="d-flex">
+          <div class="flex-fill">
+            <p>小孩</p>
+            <p class="mask_number">${ info.mask_child}</p>
+          </div>
+          <div class="flex-fill">
+            <p>大人</p>
+            <p class="mask_number">${ info.mask_adult}</p>
+          </div>
+        </div>
+        <small class="customPopup_updated">更新時間：${ info.updated}</small>
       </div>
     `;
   }
