@@ -68,7 +68,7 @@ export class MapComponent implements OnInit {
       zoom: 14,
       zoomControl: false,
       layers: [L.tileLayer(
-        'https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={accessToken}',
+        'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
         {
           attribution: 'Map data',
           maxZoom: 16,
