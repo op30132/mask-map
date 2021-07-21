@@ -148,7 +148,7 @@ export class MapComponent implements OnInit {
   }
   customIcon(color: string) {
     return L.icon({
-      iconUrl: `/assets/image/marker-${color}.png`,
+      iconUrl: `./assets/image/marker-${color}.png`,
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 33],
       iconAnchor: [12, 41],
