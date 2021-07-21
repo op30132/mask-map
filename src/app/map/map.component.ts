@@ -22,12 +22,8 @@ export class MapComponent implements OnInit {
   ) {
     this.icons = {
       red: this.customIcon('red'),
-      orange: this.customIcon('orange'),
       yellow: this.customIcon('yellow'),
       green: this.customIcon('green'),
-      blue: this.customIcon('blue'),
-      violet: this.customIcon('violet'),
-      gold: this.customIcon('gold'),
       grey: this.customIcon('grey'),
     };
   }
@@ -68,7 +64,7 @@ export class MapComponent implements OnInit {
       zoom: 14,
       zoomControl: false,
       layers: [L.tileLayer(
-        'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
+        `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${environment.token}`,
         {
           attribution: 'Map data',
           maxZoom: 16,
@@ -152,9 +148,9 @@ export class MapComponent implements OnInit {
   }
   customIcon(color: string) {
     return L.icon({
-      iconUrl: `https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+      iconUrl: `/assets/image/marker-${color}.png`,
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41],
+      iconSize: [25, 33],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
